@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.links line {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
+
+.nodes circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+text {
+  font-family: sans-serif;
+  font-size: 10px;
+}
+
+</style>
+<svg width="1200" height="1000"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+var simulation = d3.forceSimulation()
+    .force("link", d3.forceLink()   .id(function(d) { return d.id; }).distance(80).strength(link => 1))
+    .force("charge", d3.forceManyBody().distanceMax(200).strength(-200))
+    .force("center", d3.forceCenter(width / 2, height / 2));
+
+// d3.json("miserables.json", function(error, graph) {
+//   if (error) throw error;
+
+// var graph = {
+//   "nodes": [
+//     {"id": "Orange", "group": 1},
+//     {"id": "Thalès", "group": 1},
+//     {"id": "Renault", "group": 1},
+//     {"id": "Peugeot", "group": 1},
+//     {"id": "Citroen", "group": 1},
+//     {"id": "Nissan", "group": 1},
+//     {"id": "EDF", "group": 1},
+//     {"id": "Alstom", "group": 1}
+//   ],
+//   "links": [
+//     {"source": "Orange", "target": "Thalès", "value": 20},
+//     {"source": "Orange", "target": "Renault", "value": 0.5},
+//     {"source": "Renault", "target": "Thalès", "value": 0.6} ,
+//     {"source": "Renault", "target": "Peugeot", "value": 0.6} ,
+//     {"source": "Renault", "target": "Citroen", "value": 6} ,
+//     {"source": "Renault", "target": "Nissan", "value": 0.6} ,
+//     {"source": "EDF", "target": "Nissan", "value": 4} ,
+//     {"source": "EDF", "target": "Citroen", "value": 4} ,
+//     {"source": "EDF", "target": "Peugeot", "value": 4} ,
+//     {"source": "Renault", "target": "Alstom", "value": 10} 
+//   ]
+// };
+
+var graph = {
+  "nodes": [
+    {"id": "IoT", "group": 1},
+    {"id": "Secure Communication", "group": 2},
+    {"id": "trusted digital services", "group": 2},
+    {"id": "Machine Learning for data streams", "group": 2},
+    {"id": "Distributed services", "group": 2},
+    {"id": "Complex autonomic system", "group": 2},
+    {"id": "security in IoT", "group": 2},
+    {"id": "SmartHome", "group": 1},
+    {"id": "Secure", "group": 2},
+    {"id": "Secure2", "group": 2},
+    {"id": "Secure3", "group": 2},
+    {"id": "Secure4", "group": 2},
+    {"id": "Secure5", "group": 2},
+    {"id": "Secure6", "group": 2},
+    {"id": "EDF", "group": 3},
+    {"id": "Orange", "group": 3},
+    {"id": "Renault", "group": 3}
+  ],
+  "links": [
+    {"source": "IoT", "target": "Secure Communication", "value": 2},
+    {"source": "IoT", "target": "trusted digital services", "value": 2},
+    {"source": "IoT", "target": "Machine Learning for data streams", "value": 1} ,
+    {"source": "IoT", "target": "Distributed services", "value": 1} ,
+    {"source": "IoT", "target": "Complex autonomic system", "value": 1} ,
+    {"source": "IoT", "target": "security in IoT", "value": 1},
+    {"source": "SmartHome", "target": "Secure Communication", "value": 1},
+    {"source": "SmartHome", "target": "Secure", "value": 1},
+    // {"source": "SmartHome", "target": "Secure2", "value": 1},
+    // {"source": "SmartHome", "target": "Secure3", "value": 1},
+    // {"source": "SmartHome", "target": "Secure4", "value": 1},
+    // {"source": "SmartHome", "target": "Secure5", "value": 1},
+    // {"source": "SmartHome", "target": "Secure6", "value": 1},
+    // {"source": "SmartHome", "target": "Distributed Services", "value": 1} ,
+    {"source": "Orange", "target": "IoT", "value": 1} 
+  ]
+};
+
+
+  var link = svg.append("g")
+      .attr("class", "links")
+    .selectAll("line")
+    .data(graph.links)
+    .enter().append("line")
+      .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+  var node = svg.append("g")
+      .attr("class", "nodes")
+    .selectAll("g")
+    .data(graph.nodes)
+    .enter().append("g")
+    
+  var circles = node.append("circle")
+      .attr("r", 8)
+      .attr("fill", function(d) { return color(d.group); })
+      .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+
+  var lables = node.append("text")
+      .text(function(d) {
+        return d.id;
+      })
+      .attr('x', 6)
+      .attr('y', 3);
+
+  node.append("title")
+      .text(function(d) { return d.id; });
+
+  simulation
+      .nodes(graph.nodes)
+      .on("tick", ticked);
+
+  simulation.force("link")
+      .links(graph.links);
+
+  function ticked() {
+    link
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node
+        .attr("transform", function(d) {
+          return "translate(" + d.x + "," + d.y + ")";
+        })
+  }
+// });
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function dragged(d) {
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function dragended(d) {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+}
+
+</script>

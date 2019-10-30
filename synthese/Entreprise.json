@@ -1,0 +1,30 @@
+[{"entreprise":"Orange",
+"Sigle":["ACES",
+        "DIG",
+        "CCN"
+],
+"expertise":[
+    "data management",
+    "AI modeling",
+    "graph mining",
+    "IoT",
+    "Natural Language processing",
+    "Knowledge base Management",
+    "Data Management",
+    "Safety and Security",
+    "Complex autonomic system",
+    "Security in IoT",
+    "Attack analysis"
+],
+"application":[
+    "Cloud application",
+    "mobile payments",
+    "blockchain",
+    "attacks detection on Web Application",
+    "energy management systems",
+    "smart grids",
+    "smart cities"
+]
+
+}
+]

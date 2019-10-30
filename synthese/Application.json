@@ -1,0 +1,32 @@
+[
+  {
+    "application": "IoT",
+    "Sigle": [
+      "ACES",
+      "DIG",
+      "CCN"
+    ],
+    "expertise": [
+      "Secure Communication",
+      "trusted digital services",
+      "Machine Learning for data streams",
+      "Distributed services",
+      "Complex autonomic system",
+      "security in IoT"
+    ],
+    "entreprise": [
+      "EDF",
+      "Orange",
+      "ScalAgent"
+    ]
+  },
+  {
+    "application": "SmartHome",
+    "expertise": [
+      "Distributed services"
+    ],
+    "entreprise": [
+      "EDF"
+    ]
+  }
+]

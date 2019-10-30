@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8"/>
+<head>
+  <title>Entreprises Applications Graph</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <style>
+    .links line {
+      stroke: #999;
+      stroke-opacity: 0.6;
+    }
+    .nodes circle {
+      stroke: #fff;
+      stroke-width: 1.5px;
+    }
+    text {
+      font-family: sans-serif;
+      font-size: 10px;
+    }
+  </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Fantomas</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="01_fullGraph.html">Full Graph</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="02_applicationsExpertisesGraph.html">Applications - Expertises</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="03_entreprisesExpertisesGraph.html">Entreprises - Expertises</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="04_entreprisesApplicationsGraph.html">Entreprises - Applications</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+  
+  <!-- <input id="distance" type="number" value ="100"> -->
+  <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-6">
+            <svg width="800" height="800"></svg>
+        </div>
+        <div class="col-md-3">
+            <h2>Applications</h2>
+            <ul id="applications" class="list-group"></ul>
+        </div>
+        <div class="col-md-3">
+            <h2>Entreprises</h2>
+            <ul id="entreprises" class="list-group"></ul>
+        </div>
+      </div>
+    </div>
+  
+  
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script type="text/javascript" src="Expertise.js"></script>
+  <script>
+    var data = JSON.parse(inputExpertises);
+    
+let applications = new Set();
+let entreprises = new Set();
+let expertises = new Set();
+// Loop over all data and fill the sets
+for(element of data) {
+  expertises.add(element.expertise);
+  element.application.forEach(app => applications.add(app));
+  element.entreprise.forEach(ent => entreprises.add(ent));
+}
+
+//console.log(JSON.stringify(Array.from(applications).sort()));  
+
+function createElementFromSet(name, mySet) {
+  for(let a of mySet) {
+    let li = document.createElement('li');
+    li.className = "list-group-item";
+    li.id= a.replace(/ /g, '_');
+    li.onclick = () => toggleFilter(a);
+    li.appendChild(document.createTextNode(a));
+    document.getElementById(name).appendChild(li); 
+  }
+}
+
+let mySortedEntreprises = [
+  'EDF',
+  'Orange',
+  'Airbus',
+  'Renault',
+  'Valeo',
+  'Cogisys',
+  'BNP Paribas',
+  'Thales'
+];
+// console.log(mySortedEntreprises);
+createElementFromSet('applications', Array.from(applications).sort());
+createElementFromSet('entreprises', mySortedEntreprises);
+// createElementFromSet('entreprises', Array.from(entreprises).sort());
+// createElementFromSet('expertises', Array.from(expertises).sort());
+
+// // Graph
+
+var graph = new Object();
+graph.nodes = [];
+graph.links = [];
+var fx = 300;
+var fy = 80;
+var strength = -10;
+
+function addToGraph(node, group) {
+  var n = new Object();
+  n.id = node;
+  n.group = group;
+  if(group == 3){
+    if(node =='EDF') {
+      n.fx = 400;
+      n.fy = 200;
+    } else if(node =='Orange') {
+      n.fx = 540;
+      n.fy = 252;
+    } else {
+      n.fx = 400;
+      n.fy = 400;
+      n.fixed = true;
+      // n.size = 20;
+    }
+   
+    fx = (fx + 150) % 900;
+    if( fx == 0) {
+      fx = 300;
+      fy +=500;
+    }
+  }
+  graph.nodes.push(n);
+  // for(app of data) {
+  //   var a = Array.from(app.application);
+  //   if(a.includes(node)) {
+  //     var link = new Object();
+  //     link.source = node;
+  //     link.target = app.expertise;
+  //     link.value = 1;
+  //     graph.links.push(link);
+  //   }
+  // }
+}
+
+function linkEntrepriseToApplications(entrepriseName) {
+  for(element of data) {
+    var arrEntreprises = Array.from(element.entreprise);
+      if(arrEntreprises.includes(entrepriseName)) {
+          var arrApplications = Array.from(element.application);
+          for(app of arrApplications) {
+            linkExist = graph.links.filter(l => l.source == entrepriseName && l.target == app);
+            if (linkExist.length == 0) {
+              var link = new Object();
+              link.source = entrepriseName;
+              link.target = app;
+              link.value = 1;
+              graph.links.push(link);
+            } else {
+              linkExist[0].value = linkExist[0].value+5;
+            }
+          }
+      }
+  }
+}
+
+applications.forEach(app => addToGraph(app, 1));
+//expertises.forEach(exp => addToGraph(exp, 2));
+for(ent of mySortedEntreprises) {
+  addToGraph(ent, 3);
+  linkEntrepriseToApplications(ent);
+}
+
+
+var simulation;
+var allFilters = [];
+function toggleFilter(filter) {
+  let index = allFilters.indexOf(filter);
+  filter_= filter.replace(/ /g, '_');
+  if(index > -1) {
+    allFilters.splice(index, 1);
+    document.querySelector('#' + filter_).className = document.querySelector('#' + filter_).className.replace(' active', '');
+
+  } else {
+    document.querySelector('#' + filter_).className +=' active';
+    allFilters.push(filter);
+  }
+  filterGraph();
+}
+
+function filterGraph() {
+  // let dist = parseInt(document.querySelector('#distance').value);
+  // console.log('Distance: ' + dist);
+  // simulation.force("link", d3.forceLink().distance(dist))
+  //   .restart();
+  var filteredLinks = graph.links;
+  if(allFilters.length > 0) {
+    filteredLinks = graph.links.filter( l => allFilters.includes(l.source.id) || allFilters.includes(l.target.id));
+  }
+
+  // Apply the general update pattern to the links.
+  // link.exit().remove();
+  nodes = graph.nodes.map(n => { o = new Object(); o.id=n.id; o.group = n.group; return o});
+  console.log(JSON.stringify(nodes));
+  //redoNodes(nodes);
+  // simulation.nodes(nodes).on("tick", ticked);
+  redoLink(filteredLinks);
+  simulation.force("link").links(filteredLinks);
+  simulation.alpha(0)
+    //.force("center", d3.forceCenter(width / 2, height / 2))
+    .restart();
+}
+  
+  var svg = d3.select("svg"),
+  width = +svg.attr("width"),
+  height = +svg.attr("height");
+
+  var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+  // let dist = parseInt(document.querySelector('#distance').value);
+dist = 80;
+  simulation = d3.forceSimulation()
+      .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(dist).strength(link => 1))
+      .force("charge", d3.forceManyBody().distanceMax(300).strength(strength))
+      // .force("center", d3.forceRadial(15))
+      // .force("center", d3.forceCenter(width / 2, height / 2))
+      ;
+
+    var link = svg.append("g")
+        .attr("class", "links")
+      .selectAll("line")
+      .data(graph.links)
+      .enter().append("line")
+        .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+    function redoLink(links) {
+      link = link.data(links);
+      link.exit().remove();
+      link = link.enter().append("line").merge(link);
+    }   
+    function redoNodes(nodes) {
+      // node = node.data(nodes);
+      node.exit().remove();
+      node = node.enter().append("circle")
+        .merge(node).attr("r", 8)
+        .attr("fill", function(d) { return color(d.group); });
+    }   
+
+  var node = svg.append("g")
+      .attr("class", "nodes")
+    .selectAll("g")
+    .data(graph.nodes)
+    .enter().append("g")
+    
+  var circles = node.append("circle")
+      .attr("r", d => d.size || 8)
+      .attr("fill", function(d) { return color(d.group); })
+      .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+
+  var lables = node.append("text")
+      .text(function(d) {
+        return d.id;
+      })
+      .attr('x', 6)
+      .attr('y', 3);
+
+  node.append("title")
+      .text(function(d) { return d.id; });
+
+  simulation
+      .nodes(graph.nodes)
+      .on("tick", ticked);
+
+  simulation.force("link")
+      .links(graph.links);
+
+
+
+function ticked() {
+    link
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+
+    node
+        .attr("transform", function(d) {
+          return "translate(" + d.x + "," + d.y + ")";
+        })
+  }
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function dragged(d) {
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function dragended(d) {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+}
+
+
+  </script>
+</body>
+
+</html>
