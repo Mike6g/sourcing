@@ -130,10 +130,11 @@ function initializeDisplay() {
         .attr("class", "nodes")
         .selectAll("circle")
         .data(graph.nodes)
-        .enter().append("circle")
+        .enter().append("circle");
 
         // node.append("circle")
-        .merge(node)
+      //  .merge(node)
+      node
         .attr("r", 8)
         .attr("fill", function (d) { return color(d.group); })
         .call(d3.drag()
