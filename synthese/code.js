@@ -17,7 +17,6 @@ function initData(_graph) {
 };
 
 
-
 //////////// FORCE SIMULATION //////////// 
 
 // force simulator
@@ -81,6 +80,12 @@ function initializeForces() {
 
 // apply new force properties
 function updateForces() {
+
+    var link_force =  d3.forceLink(link)
+                        .id(function(d) { return d.id; })
+                        .distance(forceProperties.link.distance)
+                        .iterations(forceProperties.link.iterations)
+                        .links(forceProperties.link.enabled ? graph.links : []);        
     // get each force by name and update the properties
     simulation.force("center")
         .x(width * forceProperties.center.x)
@@ -99,11 +104,11 @@ function updateForces() {
     simulation.force("forceY")
         .strength(forceProperties.forceY.strength * forceProperties.forceY.enabled)
         .y(height * forceProperties.forceY.y);
-    simulation.force("link")
-        .id(function (d) { return d.id; })
-        .distance(forceProperties.link.distance)
-        .iterations(forceProperties.link.iterations)
-        .links(forceProperties.link.enabled ? graph.links : []);
+    simulation.force("link", link_force);
+        // .id(function (d) { return d.id; })
+        // .distance(forceProperties.link.distance)
+        // .iterations(forceProperties.link.iterations)
+        // .links(forceProperties.link.enabled ? graph.links : []);
 
     // updates ignored until this is run
     // restarts the simulation (important if simulation has already slowed down)
@@ -159,6 +164,17 @@ function initializeDisplay() {
     updateDisplay();
 }
 
+//add zoom capabilities 
+var zoom_handler = d3.zoom()
+    .on("zoom", zoom_actions);
+
+zoom_handler(svg);     
+//Zoom functions 
+function zoom_actions(){
+    node.attr("transform", d3.event.transform)
+    link.attr("transform", d3.event.transform)
+}
+
 // update the display based on the forces (but not positions)
 function updateDisplay() {
     node
@@ -186,7 +202,7 @@ function ticked() {
         // .attr("transform", function(d) {
         //     return "translate(" + d.x + "," + d.y + ")";
         // })
-    d3.select('#alpha_value').style('flex-basis', (simulation.alpha() * 100) + '%');
+    // d3.select('#alpha_value').style('flex-basis', (simulation.alpha() * 100) + '%');
 }
 
 
